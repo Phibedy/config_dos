@@ -14,4 +14,4 @@ class ExampleConan(ConanFile):
         self.copy("*.dylib",dst=".")
         self.copy("bin/*",dst=".")
         self.copy("include/*",dst="")
-        #self.copy("Eigen/*",dst="include/")
+        self.copy("Eigen/*",dst="include/")
