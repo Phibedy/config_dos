@@ -1,0 +1,48 @@
+<lms>
+<service name="sdl_service" lib="lms_sdl_service" class="SdlService"/>
+<module name="sdl_image_renderer_grey" lib="sdl_image_renderer" class="SdlImageRenderer">
+    <!--channelMapping from="OUTPUT_IMAGE" to="IMAGE"/-->
+    <config>
+        <title>IMAGE</title>
+        <channels>IMAGE</channels>
+        <output>false</output>
+    </config>
+</module>
+<module name="camera_importer" lib="camera_importer" class="CameraImporter">
+<channelMapping from="IMAGE" to="IMAGE_UV"/>
+    <config>
+        <device>/dev/video0</device>
+        <width>320</width>
+        <height>240</height>
+        <format>YUYV</format>
+        <framerate>100</framerate>
+        <!--
+        # Special settings for V4L (Video for Linux)
+        Auto Exposure = 0
+        Brightness = 0
+        Contrast = 60
+        Camera Controls = 0
+        Exposure = 100
+        Gain, Automatic = 0
+        Gain = 15
+        Hue = 0
+        Horizontal Flip = 1
+        Power Line Frequency = 0
+        Sharpness = 0
+        Saturation = 64
+        User Controls = 0
+        Vertical Flip = 1
+        White Balance, Automatic = 1 -->
+    </config>
+</module>
+
+<module name="dsodometry" lib="dsodometry" class="Dsodometry"/>
+
+<module name="image_converter" lib="image_converter" class="ImageConverter">
+    <channelMapping from="INPUT_IMAGE" to="IMAGE_UV"/>
+    <channelMapping from="OUTPUT_IMAGE" to="IMAGE"/>
+    <config>
+        <output_format>GREY</output_format>
+    </config>
+</module>
+</lms>
