@@ -19,3 +19,12 @@
 [submodule "external/libraries/math_lib"]
 	path = external/libraries/math_lib
 	url = https://github.com/lms-org/math_lib
+[submodule "external/modules/camera_importer"]
+	path = external/modules/camera_importer
+	url = https://github.com/lms-org/camera_importer
+[submodule "external/modules/image_converter"]
+	path = external/modules/image_converter
+	url = https://github.com/lms-org/image_converter
+[submodule "external/libraries/imaging_detection"]
+	path = external/libraries/imaging_detection
+	url = https://github.com/lms-org/imaging_detection
