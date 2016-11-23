@@ -61,6 +61,7 @@
         <ymin>400</ymin>
         <ymax>600</ymax>
         <drawDebug>true</drawDebug>
+        <fastThreshold>40</fastThreshold>
         <minFeatureCount>1000</minFeatureCount>
         <cam2world>-7.34321e-05,0.000640175,-0.780523,0.00147214,6.82574e-05,-0.990151,1.19912e-05,-0.00432448,1.20903</cam2world>
     </config>

@@ -51,7 +51,7 @@ void featureTracking(Mat img_1, Mat img_2, vector<Point2f>& points1, vector<Poin
 //this function automatically gets rid of points for which tracking fails
 
   vector<float> err;					
-  Size winSize=Size(21,21);																								
+  Size winSize=Size(21,21);
   TermCriteria termcrit=TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, 0.01);
 
   calcOpticalFlowPyrLK(img_1, img_2, points1, points2, status, err, winSize, 3, termcrit, 0, 0.001);
@@ -74,9 +74,8 @@ void featureTracking(Mat img_1, Mat img_2, vector<Point2f>& points1, vector<Poin
 }
 
 
-void featureDetection(Mat img_1, vector<Point2f>& points1)	{   //uses FAST as of now, modify parameters as necessary
+void featureDetection(Mat img_1, vector<Point2f>& points1,int fast_threshold)	{   //uses FAST as of now, modify parameters as necessary
   vector<KeyPoint> keypoints_1;
-  int fast_threshold = 20;
   bool nonmaxSuppression = true;
   FAST(img_1, keypoints_1, fast_threshold, nonmaxSuppression);
   KeyPoint::convert(keypoints_1, points1, vector<int>());

@@ -25,6 +25,7 @@ bool SimpleVisualOdometry::deinitialize() {
 
 //TODO We could try Kabasch_algoithm
 bool SimpleVisualOdometry::cycle() {
+    int fastThreshold = config().get<int>("fastThreshold",20);
     bool drawDebug = config().get<bool>("drawDebug",false);
     //catch first round
     if(oldImage.width()==0 || oldImage.height() == 0){
@@ -52,8 +53,9 @@ bool SimpleVisualOdometry::cycle() {
     int minFeatureCount = config().get<int>("minFeatureCount",1);
     if(oldImagePoints.size() <minFeatureCount){
         oldImagePoints.clear();
-        featureDetection(oldIm, oldImagePoints); //detect points
+        featureDetection(oldIm, oldImagePoints,fastThreshold); //detect points
         if(oldImagePoints.size() == 0){
+            oldImage = *image;
             logger.error("No features detected!");
             return false;
         }
@@ -74,7 +76,7 @@ bool SimpleVisualOdometry::cycle() {
         newImagePoints.clear();
         oldImagePoints.clear();
         status.clear();
-        featureDetection(oldIm, oldImagePoints); //detect points
+        featureDetection(oldIm, oldImagePoints,fastThreshold); //detect points
         logger.debug("detected new features")<<oldImagePoints.size();
         if(oldImagePoints.size() == 0){
             logger.error("No features detected!");
@@ -138,11 +140,11 @@ bool SimpleVisualOdometry::cycle() {
         //solve it
         cv::Mat res;
         cv::solve(leftSide,rightSide,res,cv::DECOMP_SVD); //TODO we could use pseudo-inverse
-        logger.error("result")<<res;
+        //calculate the rotation/translation matrix
         float dx = res.at<double>(2);
         float dy = res.at<double>(3);
         float angle = std::atan2(res.at<double>(1),res.at<double>(0));
-        logger.error("angle")<<angle*180/M_PI;
+        //TODO use cos/sin from res
         transRot.at<double>(0,0) = std::cos(angle);
         transRot.at<double>(0,1) = -std::sin(angle);
         transRot.at<double>(1,0) = std::sin(angle);
@@ -152,11 +154,8 @@ bool SimpleVisualOdometry::cycle() {
         transRot.at<double>(2,0) = 0;
         transRot.at<double>(2,1) = 0;
         transRot.at<double>(2,2) = 1;
-        logger.error("transRot")<<transRot;
-        logger.error("currentPosition")<<"davor: "<<currentPosition;
+        //translate the current position
         currentPosition = transRot*currentPosition;
-        logger.error("new position")<<currentPosition;
-        logger.error("currentPosition")<<"danach: "<<currentPosition;
         lms::imaging::BGRAImageGraphics traGraphics(*trajectoryImage);
         traGraphics.setColor(lms::imaging::red);
         traGraphics.drawPixel(currentPosition.at<double>(0)*512/30+256,currentPosition.at<double>(1)*512/30+256);
