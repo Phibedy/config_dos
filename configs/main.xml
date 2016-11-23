@@ -4,7 +4,7 @@
     <!--channelMapping from="OUTPUT_IMAGE" to="IMAGE"/-->
     <config>
         <title>IMAGE</title>
-        <channels>IMAGE</channels>
+        <channels>IMAGE,DEBUG_IMAGE</channels>
         <output>false</output>
     </config>
 </module>
@@ -36,13 +36,21 @@
     </config>
 </module>
 
-<module name="dsodometry" lib="dsodometry" class="Dsodometry"/>
+<!--module name="dsodometry" lib="dsodometry" class="Dsodometry"/-->
 
 <module name="image_converter" lib="image_converter" class="ImageConverter">
     <channelMapping from="INPUT_IMAGE" to="IMAGE_UV"/>
     <channelMapping from="OUTPUT_IMAGE" to="IMAGE"/>
     <config>
         <output_format>GREY</output_format>
+    </config>
+</module>
+
+<module name="simple_visual_odometry" lib="simple_visual_odometry" class="SimpleVisualOdometry">
+    <config>
+        <drawDebug>true</drawDebug>
+        <minFeatureCount>1</minFeatureCount>
+        <cam2world>-7.34321e-05,0.000640175,-0.780523,0.00147214,6.82574e-05,-0.990151,1.19912e-05,-0.00432448,1.20903</cam2world>
     </config>
 </module>
 </lms>
