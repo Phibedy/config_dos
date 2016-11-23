@@ -28,3 +28,6 @@
 [submodule "external/libraries/imaging_detection"]
 	path = external/libraries/imaging_detection
 	url = https://github.com/lms-org/imaging_detection
+[submodule "external/modules/image_loader"]
+	path = external/modules/image_loader
+	url = https://github.com/lms-org/image_loader/

@@ -10,14 +10,16 @@
  **/
 class SimpleVisualOdometry : public lms::Module {
     lms::ReadDataChannel<lms::imaging::Image> image;
-    lms::WriteDataChannel<lms::imaging::Image> debugImage;
+    lms::WriteDataChannel<lms::imaging::Image> debugImage,trajectoryImage;
     lms::imaging::Image oldImage;
-    std::vector<cv::Point2f> oldPoints;
+    std::vector<cv::Point2f> oldImagePoints;
 
     cv::Mat world2cam,cam2world;
+    cv::Mat currentPosition;
+    cv::Mat transRot;
 
     //tmp objects
-    std::vector<cv::Point2f> newPoints;
+    std::vector<cv::Point2f> newImagePoints;
     std::vector<uchar> status;
 
 public:

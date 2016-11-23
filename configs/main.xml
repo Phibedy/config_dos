@@ -8,48 +8,60 @@
         <output>false</output>
     </config>
 </module>
-<module name="camera_importer" lib="camera_importer" class="CameraImporter">
-<channelMapping from="IMAGE" to="IMAGE_UV"/>
-    <config>
-        <device>/dev/video0</device>
-        <width>320</width>
-        <height>240</height>
-        <format>YUYV</format>
-        <framerate>100</framerate>
-        <!--
-        # Special settings for V4L (Video for Linux)
-        Auto Exposure = 0
-        Brightness = 0
-        Contrast = 60
-        Camera Controls = 0
-        Exposure = 100
-        Gain, Automatic = 0
-        Gain = 15
-        Hue = 0
-        Horizontal Flip = 1
-        Power Line Frequency = 0
-        Sharpness = 0
-        Saturation = 64
-        User Controls = 0
-        Vertical Flip = 1
-        White Balance, Automatic = 1 -->
-    </config>
-</module>
-
+<if set="load">
+    <module name="image_loader" lib="image_loader" class="ImageLoader">
+        <channelMapping from="IMAGE" to="IMAGE"/>
+        <config>
+            <minCounter>0</minCounter>
+            <maxCounter>-1</maxCounter>
+        </config>
+    </module>
+</if>
+<if notSet="load">
+    <module name="camera_importer" lib="camera_importer" class="CameraImporter">
+    <channelMapping from="IMAGE" to="IMAGE_UV"/>
+        <config>
+            <device>/dev/video0</device>
+            <width>320</width>
+            <height>240</height>
+            <format>YUYV</format>
+            <framerate>100</framerate>
+            <!--
+            # Special settings for V4L (Video for Linux)
+            Auto Exposure = 0
+            Brightness = 0
+            Contrast = 60
+            Camera Controls = 0
+            Exposure = 100
+            Gain, Automatic = 0
+            Gain = 15
+            Hue = 0
+            Horizontal Flip = 1
+            Power Line Frequency = 0
+            Sharpness = 0
+            Saturation = 64
+            User Controls = 0
+            Vertical Flip = 1
+            White Balance, Automatic = 1 -->
+        </config>
+    </module>
+    <module name="image_converter" lib="image_converter" class="ImageConverter">
+        <channelMapping from="INPUT_IMAGE" to="IMAGE_UV"/>
+        <channelMapping from="OUTPUT_IMAGE" to="IMAGE"/>
+        <config>
+            <output_format>GREY</output_format>
+        </config>
+    </module>
+</if>
 <!--module name="dsodometry" lib="dsodometry" class="Dsodometry"/-->
-
-<module name="image_converter" lib="image_converter" class="ImageConverter">
-    <channelMapping from="INPUT_IMAGE" to="IMAGE_UV"/>
-    <channelMapping from="OUTPUT_IMAGE" to="IMAGE"/>
-    <config>
-        <output_format>GREY</output_format>
-    </config>
-</module>
-
 <module name="simple_visual_odometry" lib="simple_visual_odometry" class="SimpleVisualOdometry">
     <config>
+        <xmin>400</xmin>
+        <xmax>700</xmax>
+        <ymin>400</ymin>
+        <ymax>600</ymax>
         <drawDebug>true</drawDebug>
-        <minFeatureCount>1</minFeatureCount>
+        <minFeatureCount>1000</minFeatureCount>
         <cam2world>-7.34321e-05,0.000640175,-0.780523,0.00147214,6.82574e-05,-0.990151,1.19912e-05,-0.00432448,1.20903</cam2world>
     </config>
 </module>
