@@ -163,8 +163,10 @@ bool SimpleVisualOdometry::cycle() {
         cv::Mat newPos = transRotOld*currentPosition;
         lms::imaging::BGRAImageGraphics traGraphics(*trajectoryImage);
         logger.error("currentPosition")<<newPos;
-        traGraphics.setColor(lms::imaging::red);
-        traGraphics.drawPixel(newPos.at<double>(0)*512/30+256,newPos.at<double>(1)*512/30+256);
+        if(drawDebug){
+            traGraphics.setColor(lms::imaging::red);
+            traGraphics.drawPixel(newPos.at<double>(0)*512/30+256,newPos.at<double>(1)*512/30+256);
+        }
     }else{
         //TODO we lost track
     }
@@ -172,13 +174,13 @@ bool SimpleVisualOdometry::cycle() {
     //set old values
     oldImage = *image;
     oldImagePoints = newImagePoints;
+    if(drawDebug){
+        //cv::namedWindow( "Camera", WINDOW_AUTOSIZE );
+        cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
+        cv::imshow( "Display window", trajectoryImage->convertToOpenCVMat() );                   // Show our image inside it.
 
-    //cv::namedWindow( "Camera", WINDOW_AUTOSIZE );
-    cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
-    cv::imshow( "Display window", trajectoryImage->convertToOpenCVMat() );                   // Show our image inside it.
-
-    cv::waitKey(0);
-
+        cv::waitKey(1);
+    }
     return true;
 }
 
