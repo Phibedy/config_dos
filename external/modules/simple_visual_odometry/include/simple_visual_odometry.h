@@ -16,7 +16,7 @@ class SimpleVisualOdometry : public lms::Module {
 
     cv::Mat world2cam,cam2world;
     cv::Mat currentPosition;
-    cv::Mat transRot;
+    cv::Mat transRotNew,transRotOld;
 
     //tmp objects
     std::vector<cv::Point2f> newImagePoints;

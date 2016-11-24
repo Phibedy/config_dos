@@ -15,7 +15,8 @@ bool SimpleVisualOdometry::initialize() {
     currentPosition.at<double>(0) = 0;
     currentPosition.at<double>(1) = 0;
     currentPosition.at<double>(2) = 1;
-    transRot.create(3,3,CV_64F);
+    transRotNew.create(3,3,CV_64F);
+    transRotOld = cv::Mat::eye(3,3,CV_64F);
     return true;
 }
 
@@ -144,21 +145,26 @@ bool SimpleVisualOdometry::cycle() {
         float dx = res.at<double>(2);
         float dy = res.at<double>(3);
         float angle = std::atan2(res.at<double>(1),res.at<double>(0));
+        logger.error("res")<<dx<<" "<<dy<<" "<<angle*180/M_PI;
         //TODO use cos/sin from res
-        transRot.at<double>(0,0) = std::cos(angle);
-        transRot.at<double>(0,1) = -std::sin(angle);
-        transRot.at<double>(1,0) = std::sin(angle);
-        transRot.at<double>(1,1) = std::cos(angle);
-        transRot.at<double>(0,2) = dx;
-        transRot.at<double>(1,2) = dy;
-        transRot.at<double>(2,0) = 0;
-        transRot.at<double>(2,1) = 0;
-        transRot.at<double>(2,2) = 1;
+        transRotNew.at<double>(0,0) = std::cos(angle);
+        transRotNew.at<double>(0,1) = -std::sin(angle);
+        transRotNew.at<double>(1,0) = std::sin(angle);
+        transRotNew.at<double>(1,1) = std::cos(angle);
+        transRotNew.at<double>(0,2) = dx;
+        transRotNew.at<double>(1,2) = dy;
+        transRotNew.at<double>(2,0) = 0;
+        transRotNew.at<double>(2,1) = 0;
+        transRotNew.at<double>(2,2) = 1;
         //translate the current position
-        currentPosition = transRot*currentPosition;
+        //TODO Hier geht was schief
+        transRotOld = transRotOld*transRotNew;
+        //currentPosition = transRotNew*currentPosition;
+        cv::Mat newPos = transRotOld*currentPosition;
         lms::imaging::BGRAImageGraphics traGraphics(*trajectoryImage);
+        logger.error("currentPosition")<<newPos;
         traGraphics.setColor(lms::imaging::red);
-        traGraphics.drawPixel(currentPosition.at<double>(0)*512/30+256,currentPosition.at<double>(1)*512/30+256);
+        traGraphics.drawPixel(newPos.at<double>(0)*512/30+256,newPos.at<double>(1)*512/30+256);
     }else{
         //TODO we lost track
     }
@@ -171,7 +177,7 @@ bool SimpleVisualOdometry::cycle() {
     cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
     cv::imshow( "Display window", trajectoryImage->convertToOpenCVMat() );                   // Show our image inside it.
 
-    cv::waitKey(1);
+    cv::waitKey(0);
 
     return true;
 }
