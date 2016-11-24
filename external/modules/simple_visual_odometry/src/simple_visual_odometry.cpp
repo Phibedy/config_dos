@@ -52,7 +52,9 @@ bool SimpleVisualOdometry::cycle() {
 
     cv::Mat oldIm = oldImage.convertToOpenCVMat()(rect);
     int minFeatureCount = config().get<int>("minFeatureCount",1);
+    bool alreadySearched = false;
     if(oldImagePoints.size() <minFeatureCount){
+        alreadySearched = true;
         oldImagePoints.clear();
         featureDetection(oldIm, oldImagePoints,fastThreshold); //detect points
         if(oldImagePoints.size() == 0){
@@ -73,11 +75,13 @@ bool SimpleVisualOdometry::cycle() {
     logger.debug("oldPoints")<<oldImagePoints.size();
     featureTracking(oldIm,newIm,oldImagePoints,newImagePoints, status); //track those features to the new image
     if(newImagePoints.size() <minFeatureCount){
-        logger.debug("not enough points tracked!")<<newImagePoints.size();
-        newImagePoints.clear();
-        oldImagePoints.clear();
-        status.clear();
-        featureDetection(oldIm, oldImagePoints,fastThreshold); //detect points
+        logger.warn("not enough points tracked!")<<newImagePoints.size();
+        if(!alreadySearched){
+            newImagePoints.clear();
+            oldImagePoints.clear();
+            status.clear();
+            featureDetection(oldIm, oldImagePoints,fastThreshold); //detect points
+        }
         logger.debug("detected new features")<<oldImagePoints.size();
         if(oldImagePoints.size() == 0){
             logger.error("No features detected!");
@@ -145,7 +149,6 @@ bool SimpleVisualOdometry::cycle() {
         float dx = res.at<double>(2);
         float dy = res.at<double>(3);
         float angle = std::atan2(res.at<double>(1),res.at<double>(0));
-        logger.error("res")<<dx<<" "<<dy<<" "<<angle*180/M_PI;
         //TODO use cos/sin from res
         transRotNew.at<double>(0,0) = std::cos(angle);
         transRotNew.at<double>(0,1) = -std::sin(angle);
@@ -162,7 +165,6 @@ bool SimpleVisualOdometry::cycle() {
         //currentPosition = transRotNew*currentPosition;
         cv::Mat newPos = transRotOld*currentPosition;
         lms::imaging::BGRAImageGraphics traGraphics(*trajectoryImage);
-        logger.error("currentPosition")<<newPos;
         if(drawDebug){
             traGraphics.setColor(lms::imaging::red);
             traGraphics.drawPixel(newPos.at<double>(0)*512/30+256,newPos.at<double>(1)*512/30+256);
