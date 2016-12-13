@@ -17,6 +17,12 @@ bool SimpleVisualOdometry::initialize() {
     currentPosition.at<double>(2) = 1;
     transRotNew.create(3,3,CV_64F);
     transRotOld = cv::Mat::eye(3,3,CV_64F);
+
+    //test
+    t_f.create(3,1,CV_64F);
+    R_f.create(3,3,CV_64F);
+
+    ukf.init();
     return true;
 }
 
@@ -26,6 +32,11 @@ bool SimpleVisualOdometry::deinitialize() {
 
 //TODO We could try Kabasch_algoithm
 bool SimpleVisualOdometry::cycle() {
+    const float dt = 0.1;
+    //logger.error("ANGLE BEFORE")<<ukf.lastState.phi();
+    ukf.predict(dt);
+    //logger.error("ANGLE AFTER")<<ukf.lastState.phi();
+
     int fastThreshold = config().get<int>("fastThreshold",20);
     bool drawDebug = config().get<bool>("drawDebug",false);
     //catch first round
@@ -88,12 +99,12 @@ bool SimpleVisualOdometry::cycle() {
         }else{
             featureTracking(oldIm,newIm,oldImagePoints,newImagePoints, status); //track those features to the new image
             logger.debug("tracking new features")<<newImagePoints.size();
-            if(newImagePoints.size() == 0){
-                logger.error("No features could be tracked!");
+            if(newImagePoints.size() <= 1){
+                logger.error("Not enough features could be tracked!")<<newImagePoints.size();
             }
         }
     }
-    if(newImagePoints.size() > 0){
+    if(newImagePoints.size() > 1){
         //as we detect the points inside a subimage we have to get the actual position:
         std::vector<cv::Point2f> tmpOldImagePoints,tmpNewImagePoints;
         for(std::size_t i = 0; i < oldImagePoints.size(); i++){
@@ -116,11 +127,33 @@ bool SimpleVisualOdometry::cycle() {
                 graphics.drawCross(p.x,p.y);
             }
         }
+        /*
+        //test
+        //recovering the pose and the essential matrix
+        double focal = 718.8560;//https://en.wikipedia.org/wiki/Focal_length
+        cv::Point2d pp(image->width()/2, image->height()/2); //http://stackoverflow.com/questions/6658258/principle-point-in-camera-matrix-programming-issue
+        cv::Mat E, R, t, mask;
+        E = cv::findEssentialMat(tmpNewImagePoints, tmpOldImagePoints, focal, pp, RANSAC, 0.999, 1.0, mask);
+        cv::recoverPose(E, tmpNewImagePoints, tmpOldImagePoints, R, t, focal, pp, mask);
+        double scale = 1;
+        logger.error("wasd")<<t;
+        logger.error("wasd2")<<R;
+        t_f = t_f + scale*(R_f*t);
+        R_f = R*R_f;
+        cv::Mat newPos;
+        newPos.create(2,1,CV_32F);
+        newPos.at<double>(0)=t_f.at<double>(0);
+        newPos.at<double>(1)=t_f.at<double>(2);
+        logger.error("newPOS")<<newPos.at<double>(0)<<" "<<newPos.at<double>(1);
+
+        //END-test
+        */
 
         //transform points to 2D-Coordinates
         std::vector<cv::Point2f> world_old,world_new;
         cv::perspectiveTransform(tmpOldImagePoints,world_old,cam2world);
         cv::perspectiveTransform(tmpNewImagePoints,world_new,cam2world);
+
 
 
         //######################################################
@@ -164,10 +197,18 @@ bool SimpleVisualOdometry::cycle() {
         transRotOld = transRotOld*transRotNew;
         //currentPosition = transRotNew*currentPosition;
         cv::Mat newPos = transRotOld*currentPosition;
+
+        //update the ukf
+        ukf.setMeasurementVec(dx/dt,dy/dt,angle/dt);
+        //ukf.pu(dt);
+        ukf.update();
+
         lms::imaging::BGRAImageGraphics traGraphics(*trajectoryImage);
         if(drawDebug){
             traGraphics.setColor(lms::imaging::red);
             traGraphics.drawPixel(newPos.at<double>(0)*512/30+256,newPos.at<double>(1)*512/30+256);
+            traGraphics.setColor(lms::imaging::blue);
+            traGraphics.drawPixel(ukf.lastState.x()*512/30+256,ukf.lastState.y()*512/30+256);
         }
     }else{
         //TODO we lost track

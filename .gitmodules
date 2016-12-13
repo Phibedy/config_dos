@@ -31,3 +31,6 @@
 [submodule "external/modules/image_loader"]
 	path = external/modules/image_loader
 	url = https://github.com/lms-org/image_loader/
+[submodule "external/libraries/kalman_filters"]
+	path = external/libraries/kalman_filters
+	url = https://github.com/tum-phoenix/kalman_filters
